@@ -25,6 +25,7 @@ type Response struct {
 	jsonBody            interface{}
 	headers             map[string]string
 	status              int64
+	proxyBaseUrl        string
 	delayDistribution   DelayInterface
 	chunkedDribbleDelay *chunkedDribbleDelay
 	fault               *Fault
@@ -73,6 +74,12 @@ func (r Response) WithChunkedDribbleDelay(numberOfChunks int64, totalDuration ti
 // WithStatus sets status for response
 func (r Response) WithStatus(status int64) Response {
 	r.status = status
+	return r
+}
+
+// WithProxyBaseUrl sets proxyBaseUrl for response
+func (r Response) WithProxyBaseUrl(proxyBaseUrl string) Response {
+	r.proxyBaseUrl = proxyBaseUrl
 	return r
 }
 

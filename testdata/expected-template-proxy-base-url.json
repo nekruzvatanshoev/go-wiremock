@@ -1,0 +1,14 @@
+{
+    "uuid": "%s",
+    "id": "%s",
+    "request": {
+      "method": "ANY",
+      "urlPattern": "/",
+      "host": {
+        "equalTo": "http://my-target-host.com:12345/"
+      }
+    },
+    "response": {
+        "proxyBaseUrl": "http://my-proxy-host.com:12345/"
+    }
+  }

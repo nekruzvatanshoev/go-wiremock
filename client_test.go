@@ -120,6 +120,17 @@ func TestStubRule_ToJson(t *testing.T) {
 				),
 			ExpectedFileName: "expected-template-bearer-auth-logicalMatcher.json",
 		},
+		{
+			Name: "StubRuleWithProxyBaseUrl",
+			StubRule: NewStubRule("ANY", URLMatching("/")).
+				WithHost(EqualTo("http://my-target-host.com:12345/")).
+				WithBearerToken(EqualTo("token123").And(StartsWith("token"))).
+				WillReturnResponse(
+					NewResponse().
+						WithStatus(http.StatusOK).WithProxyBaseUrl("http://my-proxy-host.com:12345/"),
+				),
+			ExpectedFileName: "expected-template-proxy-base-url.json",
+		},
 	}
 
 	for _, tc := range testCases {
