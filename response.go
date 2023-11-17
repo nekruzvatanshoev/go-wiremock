@@ -166,5 +166,9 @@ func (r Response) ParseResponse() map[string]interface{} {
 		jsonMap["fault"] = *r.fault
 	}
 
+	if r.proxyBaseUrl != "" {
+		jsonMap["proxyBaseUrl"] = r.proxyBaseUrl
+	}
+
 	return jsonMap
 }

@@ -2,6 +2,7 @@ package wiremock
 
 import (
 	"bytes"
+	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -15,12 +16,21 @@ const (
 
 // A Client implements requests to the wiremock server.
 type Client struct {
-	url string
+	url        string
+	httpClient *http.Client
 }
 
 // NewClient returns *Client.
-func NewClient(url string) *Client {
-	return &Client{url: url}
+func NewClient(url string, insecureSkipVerify bool) *Client {
+	return &Client{
+		url: url,
+		httpClient: &http.Client{
+			Transport: &http.Transport{
+				TLSClientConfig: &tls.Config{
+					InsecureSkipVerify: insecureSkipVerify,
+				},
+			},
+		}}
 }
 
 // StubFor creates a new stub mapping.
@@ -30,7 +40,7 @@ func (c *Client) StubFor(stubRule *StubRule) error {
 		return fmt.Errorf("build stub request error: %s", err.Error())
 	}
 
-	res, err := http.Post(fmt.Sprintf("%s/%s", c.url, wiremockAdminMappingsURN), "application/json", bytes.NewBuffer(requestBody))
+	res, err := c.httpClient.Post(fmt.Sprintf("%s/%s", c.url, wiremockAdminMappingsURN), "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
 		return fmt.Errorf("stub request error: %s", err.Error())
 	}
@@ -70,7 +80,7 @@ func (c *Client) Clear() error {
 
 // Reset restores stub mappings to the defaults defined back in the backing store.
 func (c *Client) Reset() error {
-	res, err := http.Post(fmt.Sprintf("%s/%s/reset", c.url, wiremockAdminMappingsURN), "application/json", nil)
+	res, err := c.httpClient.Post(fmt.Sprintf("%s/%s/reset", c.url, wiremockAdminMappingsURN), "application/json", nil)
 	if err != nil {
 		return fmt.Errorf("reset Request error: %s", err.Error())
 	}
@@ -90,7 +100,7 @@ func (c *Client) Reset() error {
 
 // ResetAllScenarios resets back to start of the state of all configured scenarios.
 func (c *Client) ResetAllScenarios() error {
-	res, err := http.Post(fmt.Sprintf("%s/%s/scenarios/reset", c.url, wiremockAdminURN), "application/json", nil)
+	res, err := c.httpClient.Post(fmt.Sprintf("%s/%s/scenarios/reset", c.url, wiremockAdminURN), "application/json", nil)
 	if err != nil {
 		return fmt.Errorf("reset all scenarios Request error: %s", err.Error())
 	}
@@ -115,7 +125,7 @@ func (c *Client) GetCountRequests(r *Request) (int64, error) {
 		return 0, fmt.Errorf("get count requests: build error: %s", err.Error())
 	}
 
-	res, err := http.Post(fmt.Sprintf("%s/%s/requests/count", c.url, wiremockAdminURN), "application/json", bytes.NewBuffer(requestBody))
+	res, err := c.httpClient.Post(fmt.Sprintf("%s/%s/requests/count", c.url, wiremockAdminURN), "application/json", bytes.NewBuffer(requestBody))
 	if err != nil {
 		return 0, fmt.Errorf("get count requests: %s", err.Error())
 	}
